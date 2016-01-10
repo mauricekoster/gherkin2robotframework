@@ -58,3 +58,6 @@ target/
 
 # project specific
 examples/*.robot
+log.html
+output.xml
+report.html
