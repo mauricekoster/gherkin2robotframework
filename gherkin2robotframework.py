@@ -12,6 +12,11 @@ def process_gherkin(gherkin_filename):
         str = f.read()
     parser = Parser()
     feature = parser.parse(str)
+
+    settings_lines = []
+    testcases_lines = []
+    keywords_lines = []
+
     process_feature(feature)
 
     generate_robot_script(os.path.dirname(gherkin_filename), feature['name'])
@@ -92,18 +97,31 @@ def process_scenario_outline(scenario):
     variables = set(variables)
     print variables
 
+    example_data = {}
+
     # per example a test case
     for example in scenario['examples']:
         if example['name']:
-            testcasename = scenario['name'] + example['name']
+            testcasename = scenario['name'] + ': '+ example['name']
         else:
             testcasename = scenario['name'] + ' example line ' + str(example['location']['line'])
 
         testcases_lines.append(testcasename)
         testcases_lines.append(FIELD_SEP.join(['', '[Template]', 'Scenario Outline ' + scenario['name']]))
 
+        header_col = {}
+        colnr = 0
+        for header_cell in example['tableHeader']['cells']:
+            v = header_cell['value']
+            header_col[v] = colnr
+            colnr += 1
+
+
         for example_row in example['tableBody']:
-            args = [cell['value'] for cell in example_row['cells']]
+            args = []
+            for a in variables:
+                args.append(example_row['cells'][header_col[a]]['value'])
+
             args = map(emptyfi, args)
             args.insert(0, '')
             testcases_lines.append(FIELD_SEP.join(args))
