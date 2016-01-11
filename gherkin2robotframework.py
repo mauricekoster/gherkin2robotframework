@@ -1,22 +1,35 @@
 from gherkin3.parser import Parser
 import yaml
 import os, re
+import argparse
+import glob, fnmatch
+
+# - Commandline parsing -------------------------------------------------------
+
+cmdlineparser =  argparse.ArgumentParser()
+cmdlineparser.add_argument("feature", nargs="?", default="")
+cmdline_args = cmdlineparser.parse_args()
+print cmdline_args
+
+# - Globals -------------------------------------------------------------------
 
 FIELD_SEP = "    "
 settings_lines = []
 testcases_lines = []
 keywords_lines = []
+seen_steps = set([])
 
 def process_gherkin(gherkin_filename):
     with open(gherkin_filename, 'r') as f:
         str = f.read()
     parser = Parser()
     feature = parser.parse(str)
-
+    global settings_lines, testcases_lines, keywords_lines, seen_steps
     settings_lines = []
     testcases_lines = []
     keywords_lines = []
-
+    seen_steps = set([])
+    
     process_feature(feature)
 
     generate_robot_script(os.path.dirname(gherkin_filename), feature['name'])
@@ -47,7 +60,7 @@ def generate_robot_script(path, featurename):
 
 
 def process_feature(feature):
-    if feature['background']:
+    if 'background' in feature:
         process_background(feature)
 
     for scenario in feature['scenarioDefinitions']:
@@ -61,11 +74,14 @@ def process_background(feature):
         keywords_lines.append(FIELD_SEP.join(['','[Documentation]',feature['background']['name']]))
 
     for step in feature['background']['steps']:
-        keywords_lines.append(FIELD_SEP + step['keyword'] + step['text'])
+        if step['keyword'] == '* ':
+            keyword = step['text']
+        else:
+            keyword = step['keyword'] + step['text']
+        keywords_lines.append(FIELD_SEP.join(['', keyword]))
     keywords_lines.append('')
 
 def process_scenario(scenario):
-    print scenario['name']
     if scenario['type'] == 'Scenario':
         process_scenario_plain(scenario)
 
@@ -78,7 +94,11 @@ def process_scenario(scenario):
 def process_scenario_plain(scenario):
     testcases_lines.append(scenario['name'])
     for step in scenario['steps']:
-        testcases_lines.append(FIELD_SEP + step['keyword'] + step['text'])
+        if step['keyword'] == '* ':
+            keyword = step['text']
+        else:
+            keyword = step['keyword'] + step['text']
+        testcases_lines.append(FIELD_SEP.join(['', keyword]))
     testcases_lines.append('')
 
 def emptyfi(x):
@@ -92,10 +112,8 @@ def process_scenario_outline(scenario):
     variables = []
     for step in scenario['steps']:
         v = re.findall('<([a-zA-Z0-9]+)>', step['text'])
-        print step['text'], v
         variables += v
     variables = set(variables)
-    print variables
 
     example_data = {}
 
@@ -135,9 +153,28 @@ def process_scenario_outline(scenario):
     arguments = ['${' + arg + '}' for arg in variables]
     keywords_lines.append(FIELD_SEP.join(['', '[Arguments]'] + arguments))
     for step in scenario['steps']:
-        keywords_lines.append(FIELD_SEP + step['keyword'] + step['text'].replace('<','${').replace('>','}'))
+        if step['keyword'] == '* ':
+            keyword = step['text']
+        else:
+            keyword = step['keyword'] + step['text']
+        keyword = keyword.replace('<','${').replace('>','}')
+        keywords_lines.append(FIELD_SEP.join(['', keyword]))
     keywords_lines.append('')
 
+def get_feature_filenames(feature_basedir):
+    matches = []
+    for root, dirnames, filenames in os.walk(feature_basedir):
+        for filename in fnmatch.filter(filenames, '*.feature'):
+            matches.append(os.path.join(root, filename))
+    return matches
 
-
-process_gherkin("examples/member_logon_with_examples.feature")
+if cmdline_args.feature:
+    if os.path.isdir(cmdline_args.feature):
+        # glob
+        l = get_feature_filenames(cmdline_args.feature)
+        for f in l:
+            process_gherkin(f)
+    else:
+        process_gherkin(cmdline_args.feature)
+else:
+    process_gherkin("examples/member_logon_with_examples.feature")

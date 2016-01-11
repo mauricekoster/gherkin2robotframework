@@ -1,5 +1,11 @@
 from gherkin3.parser import Parser
 import yaml
+import argparse
+
+cmdlineparser =  argparse.ArgumentParser()
+cmdlineparser.add_argument("feature")
+cmdline_args = cmdlineparser.parse_args()
+print cmdline_args
 
 def dump_gherkin(gherkin_filename):
     with open(gherkin_filename, 'r') as f:
@@ -9,4 +15,4 @@ def dump_gherkin(gherkin_filename):
 
     print yaml.dump(feature)
 
-dump_gherkin('examples/member_logon_with_examples.feature')
+dump_gherkin(cmdline_args.feature)
