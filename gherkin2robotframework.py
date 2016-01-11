@@ -29,7 +29,7 @@ def process_gherkin(gherkin_filename):
     testcases_lines = []
     keywords_lines = []
     seen_steps = set([])
-    
+
     process_feature(feature)
 
     generate_robot_script(os.path.dirname(gherkin_filename), feature['name'])
@@ -168,13 +168,17 @@ def get_feature_filenames(feature_basedir):
             matches.append(os.path.join(root, filename))
     return matches
 
+def process_directory(d):
+    l = get_feature_filenames(d)
+    for f in l:
+        print f
+        process_gherkin(f)
+
 if cmdline_args.feature:
     if os.path.isdir(cmdline_args.feature):
         # glob
-        l = get_feature_filenames(cmdline_args.feature)
-        for f in l:
-            process_gherkin(f)
+        process_directory(cmdline_args.feature)
     else:
         process_gherkin(cmdline_args.feature)
 else:
-    process_gherkin("examples/member_logon_with_examples.feature")
+    process_directory('.')
