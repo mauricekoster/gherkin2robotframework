@@ -8,6 +8,7 @@ import glob, fnmatch
 
 cmdlineparser =  argparse.ArgumentParser()
 cmdlineparser.add_argument("feature", nargs="?", default="")
+cmdlineparser.add_argument("outputdir", nargs="?", default=".")
 cmdline_args = cmdlineparser.parse_args()
 
 # - Globals -------------------------------------------------------------------
@@ -18,7 +19,7 @@ testcases_lines = []
 keywords_lines = []
 seen_steps = set([])
 
-def process_gherkin(gherkin_filename):
+def process_gherkin(gherkin_filename, basedir, outputdir):
     with open(gherkin_filename, 'r') as f:
         str = f.read()
     parser = Parser()
@@ -31,7 +32,9 @@ def process_gherkin(gherkin_filename):
 
     process_feature(feature)
 
-    generate_robot_script(os.path.dirname(gherkin_filename), feature['name'])
+    feature_base = os.path.dirname(gherkin_filename)
+    feature_sub = feature_base[len(basedir)+1:]
+    generate_robot_script(os.path.join(outputdir, feature_sub), feature['name'])
 
 def writetoscript(outfile, line):
     if type(line) is list:
@@ -39,8 +42,10 @@ def writetoscript(outfile, line):
     else:
         outfile.write(line + '\n')
 
-
 def generate_robot_script(path, featurename):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
     stepdefinitions_resource = "%s_stepdefinitions.robot" % featurename
     stepdefinitions_resource = stepdefinitions_resource.lower().replace(' ', '_')
 
@@ -174,8 +179,6 @@ def process_scenario_outline(scenario):
 
         testcases_lines.append('')
 
-
-
     # Test Template
     keywords_lines.append('Scenario Outline ' + scenario['name'])
     arguments = ['${' + arg + '}' for arg in variables]
@@ -193,17 +196,16 @@ def get_feature_filenames(feature_basedir):
             matches.append(os.path.join(root, filename))
     return matches
 
-def process_directory(d):
+def process_directory(d, outputdir):
     l = get_feature_filenames(d)
     for f in l:
-        print f
-        process_gherkin(f)
+        process_gherkin(f, d, outputdir)
 
 if cmdline_args.feature:
     if os.path.isdir(cmdline_args.feature):
         # glob
-        process_directory(cmdline_args.feature)
+        process_directory(cmdline_args.feature, cmdline_args.outputdir)
     else:
-        process_gherkin(cmdline_args.feature)
+        process_gherkin(cmdline_args.feature, '.', cmdline_args.outputdir)
 else:
-    process_directory('.')
+    process_directory('.', '.')
