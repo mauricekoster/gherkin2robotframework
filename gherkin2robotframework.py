@@ -1,3 +1,19 @@
+"""
+Parse Cucumber feature files into RobotFramework test script and resource
+
+Resource will only be created if it does not exist.
+
+Usage:
+    gherkin2robotframework <feature> [output dir]
+
+
+Author: Maurice Koster
+Url: https://github.com/mauricekoster/gherkin2robotframework
+License: See LICENSE
+
+
+"""
+
 from gherkin3.parser import Parser
 import os
 import re
