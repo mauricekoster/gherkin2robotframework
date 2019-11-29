@@ -132,11 +132,64 @@ def generate_robot_script(path, feature_name):
     generate_robot_script_resource(path, step_definitions_resource)
 
 
+def _read_keywords_from_resource(fn):
+    lines = None
+    keywords = []
+
+    with open(fn, 'r') as f:
+        lines = f.readlines()
+
+    in_keywords = False
+    for line in lines:
+        if not line.strip():
+            continue
+
+        if in_keywords:
+            if not line.startswith(' ') and not line.startswith('\t'):
+                keyword = line.strip()
+                kw = re.sub('\$\{[0-9a-z-A-Z_]+\}', '(.*)', keyword)
+
+                keywords.append(kw)
+        else:
+            if line.startswith('*** Keywords ***'):
+                in_keywords = True
+
+    if cmdline_args.verbose:
+        pprint(keywords)
+    return keywords
+
+
 def generate_robot_script_resource(path, step_definitions_resource):
     fn = os.path.join(path, step_definitions_resource)
     if os.path.exists(fn):
         if cmdline_args.verbose:
             print "existing file " + step_definitions_resource
+        kw = _read_keywords_from_resource(fn)
+        found = False
+        for keyword, argument in seen_steps.iteritems():
+            ff = False
+            for keyword_regex in kw:
+                regex = re.compile(keyword_regex)
+                if re.match(regex, keyword):
+                    ff = True
+            if not ff:
+                found = True
+        if found:
+            print("\nMissing keywords for: {0}\n".format(fn))
+            for keyword, argument in seen_steps.iteritems():
+                ff = False
+                for keyword_regex in kw:
+                    regex = re.compile(keyword_regex)
+                    if re.match(regex, keyword):
+                        ff = True
+                if not ff:
+                    print(keyword)
+                    if argument:
+                        args = ['', '[Arguments]', argument]
+                        print(FIELD_SEP.join(args))
+
+                    print(FIELD_SEP + 'No Operation')
+            print("\n")
     else:
         if cmdline_args.verbose:
             print "new file " + step_definitions_resource
