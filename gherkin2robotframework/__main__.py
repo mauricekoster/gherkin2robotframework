@@ -267,7 +267,6 @@ def process_datatable(datatable):
 
 
 def generate_datatable_as_list_of_dict(output, dt):
-    # TODO: new RF3.1+ syntax
     # FOR    ${BSN}   ${NAME}  IN
     # ...     1      Jan
     # ...     2      Piet
@@ -277,8 +276,8 @@ def generate_datatable_as_list_of_dict(output, dt):
     # END  
 
     output.append(['', '${DataTable}=', 'Create List'])
-    # :FOR (new syntax FOR)
-    line = ['', ':FOR']
+    # FOR
+    line = ['', 'FOR']
     for col in dt[0]:
         line.append('${' + col + '}')
     line.append('IN')
@@ -290,16 +289,16 @@ def generate_datatable_as_list_of_dict(output, dt):
         output.append(line)
     
     # Create dictionary
-    line = ['', '\\', '${entry}=', 'Create Dictionary']
+    line = ['', '', '${entry}=', 'Create Dictionary']
     for col in dt[0]:
         line.append(col + '=${' + col + '}')
     output.append(line)
 
     # Append To List
-    output.append(['', '\\', 'Append To List', '${DataTable}', '${entry}'])
+    output.append(['', '', 'Append To List', '${DataTable}', '${entry}'])
     
     # END  (new syntax)
-    # output.append(['', 'END'])
+    output.append(['', 'END'])
     return '@{DataTable}'
 
 
