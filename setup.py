@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="gherkin2robotframework",
-    version="0.2",
+    version="0.3",
     packages=["gherkin2robotframework"],
     install_requires=["gherkin3==3.1.2", "pyyaml"],
 
