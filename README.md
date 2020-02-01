@@ -56,7 +56,7 @@ Feature: Examples
 ```
 
 ### First time generation
-After creating your feature files you can translate these into RobotFrame test scripts with the following command:
+After creating your feature files you can translate these into RobotFramework test scripts with the following command:
 
     gherkin2robotframework example.feature
 
