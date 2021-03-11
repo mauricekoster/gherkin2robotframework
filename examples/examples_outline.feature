@@ -36,7 +36,7 @@ Feature: Examples outline
     A nice description
     on multiple lines
     Given a thing with "<thingy>"
-    When some action doing action <action>
+    When doing action <action>
     Then this happened: <stuff>
 
     @A

@@ -53,6 +53,21 @@ Feature: Examples
       | CCC     | 789   |
       | DDD     | 000   |
 
+  @tag
+  Scenario Outline: More stuff
+    A nice description
+    on multiple lines
+    Given a thing with "<thingy>"
+    When doing action <action>
+    Then this happened: <stuff>
+
+    @A
+    Examples: A
+      Documentation for
+      example A
+      | thingy  | action | stuff |
+      | AAA     | take   | 123   |
+      | BBB     | give   | 456   |
 ```
 
 ### First time generation
