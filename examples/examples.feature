@@ -14,26 +14,3 @@ Feature: Examples
       | Joe   | Hello      |
       | Mary  | Hi, there! |
     Then the wold is a better place
-
-  @tag
-  Scenario Outline: Repetitive stuff
-    A nice description
-    on multiple lines
-    Given a thing with "<thingy>"
-    When some action
-    Then this happened: <stuff>
-
-    @A
-    Examples: A
-      Documentation for
-      example A
-      | thingy  | stuff |
-      | AAA     | 123   |
-      | BBB     | 456   |
-
-    @B
-    Examples: B
-      Documentation for example B
-      | thingy  | stuff |
-      | CCC     | 789   |
-      | DDD     | 000   |
