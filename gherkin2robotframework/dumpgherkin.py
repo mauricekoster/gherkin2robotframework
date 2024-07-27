@@ -1,4 +1,5 @@
-from gherkin3.parser import Parser
+from gherkin.parser import Parser
+
 import yaml
 import argparse
 
