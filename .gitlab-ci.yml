@@ -1,8 +1,0 @@
-stages:          # List of stages for jobs, and their order of execution
-  - test
-
-build-job:       # This job runs in the build stage, which runs first.
-  stage: test
-  script:
-    - echo "Compiling the code..."
-    - echo "Compile complete."
