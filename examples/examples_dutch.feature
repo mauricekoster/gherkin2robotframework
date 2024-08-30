@@ -1,4 +1,5 @@
 # language: nl
+@Hallo
 Functionaliteit: Voorbeelden
 
   Als een tester
@@ -9,6 +10,9 @@ Functionaliteit: Voorbeelden
     Gegeven enkele achtergrond dingen
 
   Scenario: Groeten
+
+    Dit is een simpele test met een eenvoudige groeter
+
     Gegeven een groeter
     Wanneer deze personen worden gegroet:
       | Naam  | Groet      |
@@ -17,8 +21,8 @@ Functionaliteit: Voorbeelden
     Dan wordt de wereld een stukje beter
 
   Scenario: Niet zo'n leuk persoon
-     Gegeven een minder leuk persoon
-     Wanneer deze personen worden gegroet:
+    Gegeven een minder leuk persoon
+    Wanneer deze personen worden gegroet:
       | Name  | Greeting   |
       | Peter | Hallo, daar! |
     Dan wordt de wereld iets minder leuk
