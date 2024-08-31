@@ -22,8 +22,12 @@ language_table = {
         "metadata": "Metadata",
         "testtags": "Test Tags",
         "tags": "Tags",
+        "template": "Template",
         "arguments": "Arguments",
 
+        "background": "Background",
+        "scenario": "Scenario",
+        "scenariooutline": "Scenario Outline",
         "Given ": "Given ",
         "When ": "When ",
         "Then ": "Then ",
@@ -59,14 +63,18 @@ language_table = {
         "testtags": "Test Labels",
 # Task Tags	Taak Labels
 # Keyword Tags	Sleutelwoord Labels
-# Tags	Labels
+
         "tags": "Labels",
 # Setup	Preconditie
 # Teardown	Postconditie
 # Template	Sjabloon
+        "template": "Sjabloon",
 # Timeout	Time-out
         "arguments": "Parameters",
 
+        "background": "Achtergrond",
+        "scenario": "Scenario,Voorbeeld",
+        "scenariooutline": "Abstract Scenario",
         "Given ": "Gegeven ",
         "When ": "Als ",
         "Then ": "Dan ",

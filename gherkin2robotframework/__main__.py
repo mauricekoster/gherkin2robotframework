@@ -154,9 +154,9 @@ def _read_keywords_from_resource(fn):
         if in_keywords:
             if not line.startswith(' ') and not line.startswith('\t'):
                 keyword = line.strip()
-                kw = re.sub('${[0-9a-z-A-Z_]+}', '(.*)', keyword)
+                kw = re.sub('\$\{[0-9a-zA-Z_]+\}', '(.*)', keyword)
 
-                keywords.append(kw)
+                keywords.append((keyword,kw))
         else:
             if line.startswith('*** Keywords ***') or line.startswith(tr("keywords_section")):
                 in_keywords = True
@@ -175,20 +175,28 @@ def generate_robot_script_resource(path, step_definitions_resource):
         found = False
         for keyword, argument in seen_steps.items():
             ff = False
-            for keyword_regex in kw:
-                regex = re.compile(keyword_regex)
-                if re.match(regex, keyword):
+            for keyword_tuple in kw:
+                keyword_org, keyword_regex = keyword_tuple
+                if keyword == keyword_org:
                     ff = True
+                else:
+                    regex = re.compile(keyword_regex)
+                    if re.match(regex, keyword):
+                        ff = True
             if not ff:
                 found = True
         if found:
             print(f"\nMissing keywords for: {fn}\n")
             for keyword, argument in seen_steps.items():
                 ff = False
-                for keyword_regex in kw:
-                    regex = re.compile(keyword_regex)
-                    if re.match(regex, keyword):
+                for keyword_tuple in kw:
+                    keyword_org, keyword_regex = keyword_tuple
+                    if keyword == keyword_org:
                         ff = True
+                    else:
+                        regex = re.compile(keyword_regex)
+                        if re.match(regex, keyword):
+                            ff = True
                 if not ff:
                     print(keyword)
                     if argument:
@@ -259,7 +267,7 @@ def process_background(background):
     global background_available
     background_available = True
 
-    keywords_lines.append('Background')
+    keywords_lines.append(tr('background'))
     if background['name']:
         keywords_lines.append(['', f'[{tr("documentation")}]', background['name']])
 
@@ -269,14 +277,14 @@ def process_background(background):
 
 
 def process_scenario(scenario):
-    if scenario['keyword'] in ['Scenario']:
+    if scenario['keyword'] in ['Scenario'] + tr('scenario').split(','):
         process_scenario_plain(scenario)
-    elif scenario['keyword'] in ['Scenario Outline']:
+    elif scenario['keyword'] in ['Scenario Outline'] + tr('scenariooutline').split(','):
         process_scenario_outline(scenario)
     else:
         raise RuntimeError(f"Unimplemented scenario keyword: {scenario['keyword']}")
 
-def process_datatable(datatable):
+def process_datatable_rows(datatable):
     ret = []
     for row in datatable:
         line = []
@@ -322,24 +330,21 @@ def generate_datatable_as_list_of_dict(output, dt):
     return '@{DataTable}'
 
 
-def process_argument(output, argument):
-    if argument['type'] == 'DocString':
-        output.append(['', '${DocString}=', 'Catenate', 'SEPARATOR=\\n'])
-        content = argument['content'].split('\n')
-        for line in content:
-            if line:
-                output.append(['', '...', line])
-            else:
-                output.append(['', '...', '${EMPTY}'])
-        return '${DocString}'
+def process_docstring(output, docstring):
+    output.append(['', '${DocString}=', 'Catenate', 'SEPARATOR=\\n'])
+    content = docstring['content'].split('\n')
+    for line in content:
+        if line:
+            output.append(['', '...', line])
+        else:
+            output.append(['', '...', '${EMPTY}'])
+    return '${DocString}'
 
-    elif argument['type'] == 'DataTable':
-        dt = process_datatable(argument['rows'])
-        variablename = generate_datatable_as_list_of_dict(output, dt)
-        return variablename
+def process_datatable(output, datatable):
+    dt = process_datatable_rows(datatable['rows'])
+    variablename = generate_datatable_as_list_of_dict(output, dt)
+    return variablename
 
-    else:
-        return None
 
 
 def add_step(output, step):
@@ -352,8 +357,10 @@ def add_step(output, step):
         keyword = tr(step['keyword'], step['keyword']) + text
 
     argument_variable = None
-    if 'argument' in step:
-        argument_variable = process_argument(output, step['argument'])
+    if 'docString' in step:
+        argument_variable = process_docstring(output, step['docString'])
+    elif 'dataTable' in step:
+        argument_variable = process_datatable(output, step['dataTable'])        
 
     if resource_keyword not in seen_steps:
         seen_steps[resource_keyword] = argument_variable
@@ -364,7 +371,7 @@ def add_step(output, step):
 
 
 def process_tags(tags):
-    tags_list = ['', '[Tags]']
+    tags_list = ['', f'[{tr("tags")}]']
     for tag in tags:
         tags_list.append(tag['name'][1:])
     test_cases_lines.append(tags_list)
@@ -379,7 +386,7 @@ def process_scenario_plain(scenario):
         process_tags(scenario['tags'])
 
     if background_available:
-        test_cases_lines.append(['', 'Background'])
+        test_cases_lines.append(['', tr('background')])
     for step in scenario['steps']:
         add_step(test_cases_lines, step)
     test_cases_lines.append('')
@@ -441,36 +448,41 @@ def process_scenario_outline(scenario):
         if tags:
             process_tags(tags)
 
-        test_cases_lines.append(['', '[Template]', 'Scenario Outline ' + scenario['name']])
+        test_cases_lines.append(['', f'[{tr("template")}]', tr("scenariooutline").split(',')[0] + ' ' + scenario['name']])
 
         header_col = {}
+        header = []
         col_nr = 0
 
         for header_cell in example['tableHeader']['cells']:
             v = header_cell['value']
             header_col[v] = col_nr
+            header.append(v)
             col_nr += 1
+
+        for v in variables:
+            if v not in header:
+                raise RuntimeWarning(f"Example {example['name']} missing column {v}")
 
         for example_row in example['tableBody']:
             args = []
-            for a in variables:
+            for a in header:
                 args.append(example_row['cells'][header_col[a]]['value'])
 
-            args = [make_empty(x) for x in args]
-            args.insert(0, '')
+            args = [''] + [make_empty(x) for x in args]
             test_cases_lines.append(args)
 
         test_cases_lines.append('')
 
     # Test Template
-    keywords_lines.append('Scenario Outline ' + scenario['name'])
+    keywords_lines.append(tr("scenariooutline").split(',')[0] + ' ' + scenario['name'])
     if 'description' in scenario:
         _add_keyword_documentation(scenario['description'])
 
-    arguments = ['${' + arg + '}' for arg in variables]
-    keywords_lines.append(['', '[Arguments]'] + arguments)
+    arguments = ['${' + arg + '}' for arg in header]
+    keywords_lines.append(['', f'[{tr("arguments")}]'] + arguments)
     if background_available:
-        keywords_lines.append(['', 'Background'])
+        keywords_lines.append(['', tr('background')])
     for step in scenario['steps']:
         add_step(keywords_lines, step)
     keywords_lines.append('')
