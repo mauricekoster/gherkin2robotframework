@@ -7,7 +7,7 @@ setup(
     name="gherkin2robotframework",
     version="0.4",
     packages=["gherkin2robotframework"],
-    install_requires=["gherkin-official==29.0.0", "pyyaml"],
+    install_requires=["gherkin-official==29.0.0", "pyyaml==6.0.2"],
 
     author="Maurice Koster",
     author_email="maurice@mauricekoster.com",
@@ -22,7 +22,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.9',
 
     entry_points={
         "console_scripts": [
