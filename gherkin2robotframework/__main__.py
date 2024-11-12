@@ -435,7 +435,7 @@ def process_scenario_outline(scenario):
         else:
             test_case_name = scenario['name'] + ' example line ' + str(example['location']['line'])
 
-        test_cases_lines.append(test_case_name)
+        # test_cases_lines.append(test_case_name)
 
         if 'description' in example:
             _add_test_case_documentation(example['description'])
