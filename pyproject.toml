@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gherkin2robotframework"
+version = "0.4.2"
+description="Translate Gherkin feature files into RobotFramework tests"
+readme = "README.md"
+keywords = ["gherkin", "robotframework"]
+license = { file = "LICENSE" }
+
+authors = [
+  { name = "Maurice Koster", email ="maurice@mauricekoster.com" } 
+]
+
+requires-python = ">= 3.9"
+
+dependencies = [
+  #"gherkin-official==29.0.0", 
+  "gherkin-official==30.0.4", 
+  "pyyaml==6.0.2"
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Repository = "https://github.com/mauricekoster/gherkin2robotframework.git"
+
+[project.scripts]
+gherkin2robotframework = "gherkin2robotframework.__main__:main"
+dumpgherkin = "gherkin2robotframework.dumpgherkin:main"

@@ -24,7 +24,7 @@ from datetime import datetime
 
 from pprint import pprint
 
-from translation import get_language, tr, set_language
+from .translation import get_language, tr, set_language
 
 # - Globals -------------------------------------------------------------------
 
@@ -154,7 +154,7 @@ def _read_keywords_from_resource(fn):
         if in_keywords:
             if not line.startswith(' ') and not line.startswith('\t'):
                 keyword = line.strip()
-                kw = re.sub('\$\{[0-9a-zA-Z_]+\}', '(.*)', keyword)
+                kw = re.sub(r'\$\{[0-9a-zA-Z_]+\}', '(.*)', keyword)
 
                 keywords.append((keyword,kw))
         else:
@@ -448,7 +448,11 @@ def process_scenario_outline(scenario):
         if tags:
             process_tags(tags)
 
-        test_cases_lines.append(['', f'[{tr("template")}]', tr("scenariooutline").split(',')[0] + ' ' + scenario['name']])
+        test_cases_lines.append([
+            '', 
+            f'[{tr("template")}]', 
+            tr("scenariooutline").split(',')[0] + ' ' + scenario['name']
+        ])
 
         header_col = {}
         header = []
